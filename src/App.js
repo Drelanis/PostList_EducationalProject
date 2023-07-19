@@ -2,53 +2,42 @@ import React, { useState } from 'react';
 import PostList from './components/PostList';
 import './styles/app.css';
 import PostForm from './components/PostForm';
-import MySelect from './components/UI/select/MySelect';
+import PostFilter from './components/PostFilter';
+import MyModal from './components/UI/modalWindow/MyModal';
+import MyButton from './components/UI/button/MyButton';
+import usePosts from './hooks/usePosts';
 
 const App = () => {
-  const [posts, setPosts] = useState([
-    { id: 1, title: '2', body: '4' },
-    { id: 2, title: '4', body: '3' },
-    { id: 3, title: '3', body: '2' },
-    { id: 4, title: '1', body: '1' },
-  ]);
+  const [posts, setPosts] = useState([]);
+  const [filter, setFilter] = useState({ sort: '', query: '' });
+  const [modal, setModal] = useState(false);
+
+  const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
 
   const createPost = (post) => {
     setPosts([...posts, post]);
+    setModal(false);
   };
 
   const removePost = (post) => {
     setPosts(posts.filter((element) => element.id !== post.id));
   };
 
-  const [selectedSort, setSelectedSort] = useState('');
-
-  const sortPosts = (sortType) => {
-    setSelectedSort(sortType);
-    setPosts([...posts].sort((a, b) => a[sortType].localeCompare(b[sortType])));
-  };
-
   return (
     <div className="App">
-      <PostForm create={createPost} />
+      <MyButton style={{ marginTop: '30px' }} onClick={() => setModal(true)}>
+        Создать статью
+      </MyButton>
+      <MyModal visible={modal} setVisible={setModal}>
+        <PostForm create={createPost} />
+      </MyModal>
       <hr style={{ margin: '15px 0' }} />
-      <MySelect
-        value={selectedSort}
-        onChange={sortPosts}
-        defaultValue={'Сортировка'}
-        options={[
-          { value: 'title', name: 'По названию' },
-          { value: 'body', name: 'По описанию' },
-        ]}
-      ></MySelect>
-      {posts.length ? (
-        <PostList
-          remove={removePost}
-          posts={posts}
-          title={'Статьи про JavaScript'}
-        />
-      ) : (
-        <h1 style={{ textAlign: 'center' }}>Посты не найдены!</h1>
-      )}
+      <PostFilter filter={filter} setFilter={setFilter} />
+      <PostList
+        remove={removePost}
+        posts={sortedAndSearchedPosts}
+        title={'Статьи про JavaScript'}
+      />
     </div>
   );
 };
