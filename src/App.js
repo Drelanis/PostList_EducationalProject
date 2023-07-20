@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PostList from './components/PostList';
 import './styles/app.css';
 import PostForm from './components/PostForm';
@@ -6,17 +6,31 @@ import PostFilter from './components/PostFilter';
 import MyModal from './components/UI/modalWindow/MyModal';
 import MyButton from './components/UI/button/MyButton';
 import usePosts from './hooks/usePosts';
+import PostService from './API/PostService';
+import Loader from './components/UI/loader/Loader';
 
 const App = () => {
   const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState({ sort: '', query: '' });
   const [modal, setModal] = useState(false);
+  const [isPostsLoading, setIsPostsLoading] = useState(false);
 
   const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
 
   const createPost = (post) => {
     setPosts([...posts, post]);
     setModal(false);
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    setIsPostsLoading(true);
+    const posts = await PostService.getAll();
+    setPosts(posts);
+    setIsPostsLoading(false);
   };
 
   const removePost = (post) => {
@@ -33,11 +47,19 @@ const App = () => {
       </MyModal>
       <hr style={{ margin: '15px 0' }} />
       <PostFilter filter={filter} setFilter={setFilter} />
-      <PostList
-        remove={removePost}
-        posts={sortedAndSearchedPosts}
-        title={'Статьи про JavaScript'}
-      />
+      {isPostsLoading ? (
+        <div
+          style={{ display: 'flex', justifyContent: 'center', marginTop: 50 }}
+        >
+          <Loader></Loader>
+        </div>
+      ) : (
+        <PostList
+          remove={removePost}
+          posts={sortedAndSearchedPosts}
+          title={'Статьи про JavaScript'}
+        />
+      )}
     </div>
   );
 };
