@@ -1,15 +1,13 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import About from '../pages/About';
-import Posts from '../pages/Posts';
-import PostIdPage from '../pages/PostIdPage';
+import routes from '../route/route';
 
 const AppRouter = () => {
   return (
     <Routes>
-      <Route path="/about" element={<About />} />
-      <Route path="/posts" element={<Posts />} />
-      <Route path="/posts/:id" element={<PostIdPage />} />
+      {routes.map((route, index) => (
+        <Route key={index} path={route.path} element={<route.component />} />
+      ))}
       <Route path="/*" element={<Navigate to="/about" />}></Route>
     </Routes>
   );
